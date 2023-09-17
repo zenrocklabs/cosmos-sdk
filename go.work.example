@@ -25,5 +25,6 @@ use (
 	./x/circuit
 	./x/feegrant
 	./x/evidence
+	./x/params/keeper
 	./x/upgrade
 )

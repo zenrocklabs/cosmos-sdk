@@ -24,7 +24,7 @@ import (
 	genutiltest "github.com/cosmos/cosmos-sdk/x/genutil/client/testutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/mint"
-	"github.com/cosmos/cosmos-sdk/x/params"
+	"cosmossdk.io/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 )
 

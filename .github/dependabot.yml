@@ -206,6 +206,15 @@ updates:
       - "A:automerge"
       - dependencies
   - package-ecosystem: gomod
+    directory: "x/params/keeper"
+    schedule:
+      interval: weekly
+      day: friday
+      time: "02:50"
+    labels:
+      - "A:automerge"
+      - dependencies
+  - package-ecosystem: gomod
     directory: "x/upgrade"
     schedule:
       interval: weekly
