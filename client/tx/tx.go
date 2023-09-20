@@ -393,16 +393,6 @@ func makeAuxSignerData(clientCtx client.Context, f Factory, msgs ...sdk.Msg) (tx
 		return tx.AuxSignerData{}, err
 	}
 
-<<<<<<< HEAD
-	if f.tip != nil {
-		if _, err := sdk.AccAddressFromBech32(f.tip.Tipper); err != nil {
-			return tx.AuxSignerData{}, sdkerrors.ErrInvalidAddress.Wrap("tipper must be a bech32 address")
-		}
-		b.SetTip(f.tip)
-	}
-
-=======
->>>>>>> 6715b5afb (refactor!: remove tips (#17787))
 	err = b.SetSignMode(f.SignMode())
 	if err != nil {
 		return tx.AuxSignerData{}, err

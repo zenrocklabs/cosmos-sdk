@@ -56,16 +56,10 @@ func TestBuilderWithAux(t *testing.T) {
 	aux2Builder.SetTimeoutHeight(3)
 	aux2Builder.SetMemo(memo)
 	aux2Builder.SetChainID(chainID)
-<<<<<<< HEAD
-	aux2Builder.SetMsgs(msg)
-	aux2Builder.SetPubKey(aux2Pk)
-	aux2Builder.SetTip(tip)
-=======
 	err = aux2Builder.SetMsgs(msg)
 	require.NoError(t, err)
 	err = aux2Builder.SetPubKey(aux2Pk)
 	require.NoError(t, err)
->>>>>>> 6715b5afb (refactor!: remove tips (#17787))
 	extOptAny, err := codectypes.NewAnyWithValue(extOpt)
 	require.NoError(t, err)
 	aux2Builder.SetExtensionOptions(extOptAny)
@@ -132,11 +126,7 @@ func TestBuilderWithAux(t *testing.T) {
 	txSigV2 := sigs[0]
 	aux2SigV2 := sigs[1]
 	// Set all signer infos.
-<<<<<<< HEAD
-	w.SetSignatures(tipperSigV2, aux2SigV2, signing.SignatureV2{
-=======
 	err = w.SetSignatures(txSigV2, aux2SigV2, signing.SignatureV2{
->>>>>>> 6715b5afb (refactor!: remove tips (#17787))
 		PubKey:   feepayerPk,
 		Sequence: 15,
 	})
@@ -156,11 +146,7 @@ func TestBuilderWithAux(t *testing.T) {
 	feepayerSig, err := feepayerPriv.Sign(signBz)
 	require.NoError(t, err)
 	// Set all signatures.
-<<<<<<< HEAD
-	w.SetSignatures(tipperSigV2, aux2SigV2, signing.SignatureV2{
-=======
 	err = w.SetSignatures(txSigV2, aux2SigV2, signing.SignatureV2{
->>>>>>> 6715b5afb (refactor!: remove tips (#17787))
 		PubKey: feepayerPk,
 		Data: &signing.SingleSignatureData{
 			SignMode:  signing.SignMode_SIGN_MODE_DIRECT,
@@ -200,19 +186,6 @@ func TestBuilderWithAux(t *testing.T) {
 	}, sigs[2])
 }
 
-<<<<<<< HEAD
-func makeTipperTxBuilder(t *testing.T) (clienttx.AuxTxBuilder, []byte) {
-	tipperBuilder := clienttx.NewAuxTxBuilder()
-	tipperBuilder.SetAddress(tipperAddr.String())
-	tipperBuilder.SetAccountNumber(1)
-	tipperBuilder.SetSequence(2)
-	tipperBuilder.SetTimeoutHeight(3)
-	tipperBuilder.SetMemo(memo)
-	tipperBuilder.SetChainID(chainID)
-	tipperBuilder.SetMsgs(msg)
-	tipperBuilder.SetPubKey(tipperPk)
-	tipperBuilder.SetTip(tip)
-=======
 func makeTxBuilder(t *testing.T) (clienttx.AuxTxBuilder, []byte) {
 	t.Helper()
 	txBuilder := clienttx.NewAuxTxBuilder()
@@ -226,7 +199,6 @@ func makeTxBuilder(t *testing.T) (clienttx.AuxTxBuilder, []byte) {
 	require.NoError(t, err)
 	err = txBuilder.SetPubKey(tipperPk)
 	require.NoError(t, err)
->>>>>>> 6715b5afb (refactor!: remove tips (#17787))
 	extOptAny, err := codectypes.NewAnyWithValue(extOpt)
 	require.NoError(t, err)
 	txBuilder.SetExtensionOptions(extOptAny)

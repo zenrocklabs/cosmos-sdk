@@ -103,16 +103,7 @@ func NewFactoryCLI(clientCtx client.Context, flagSet *pflag.FlagSet) (Factory, e
 	feesStr, _ := flagSet.GetString(flags.FlagFees)
 	f = f.WithFees(feesStr)
 
-<<<<<<< HEAD
-	tipsStr, _ := flagSet.GetString(flags.FlagTip)
-	// Add tips to factory. The tipper is necessarily the Msg signer, i.e.
-	// the from address.
-	f = f.WithTips(tipsStr, clientCtx.FromAddress.String())
-
-	gasPricesStr, _ := flagSet.GetString(flags.FlagGasPrices)
-=======
 	gasPricesStr := clientCtx.Viper.GetString(flags.FlagGasPrices)
->>>>>>> 6715b5afb (refactor!: remove tips (#17787))
 	f = f.WithGasPrices(gasPricesStr)
 
 	f = f.WithPreprocessTxHook(clientCtx.PreprocessTxHook)
