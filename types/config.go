@@ -45,6 +45,8 @@ func NewConfig() *Config {
 			"account_pub":    Bech32PrefixAccPub,
 			"validator_pub":  Bech32PrefixValPub,
 			"consensus_pub":  Bech32PrefixConsPub,
+			"keyring":        Bech32PrefixKeyring,
+			"workspace":      Bech32PrefixWorkspace,
 		},
 		fullFundraiserPath: FullFundraiserPath,
 
@@ -90,9 +92,18 @@ func (config *Config) SetBech32PrefixForAccount(addressPrefix, pubKeyPrefix stri
 	config.bech32AddressPrefix["account_pub"] = pubKeyPrefix
 }
 
+func (config *Config) SetBech32PrefixForKeyring(keyringPrefix string) {
+	config.assertNotSealed()
+	config.bech32AddressPrefix["keyring"] = keyringPrefix
+}
+
+func (config *Config) SetBech32PrefixForWorkspace(workspacePrefix string) {
+	config.assertNotSealed()
+	config.bech32AddressPrefix["workspace"] = workspacePrefix
+}
+
 // SetBech32PrefixForValidator builds the Config with Bech32 addressPrefix and publKeyPrefix for validators
-//
-//	and returns the config instance
+// and returns the config instance
 func (config *Config) SetBech32PrefixForValidator(addressPrefix, pubKeyPrefix string) {
 	config.assertNotSealed()
 	config.bech32AddressPrefix["validator_addr"] = addressPrefix
@@ -160,6 +171,16 @@ func (config *Config) Seal() *Config {
 // GetBech32AccountAddrPrefix returns the Bech32 prefix for account address
 func (config *Config) GetBech32AccountAddrPrefix() string {
 	return config.bech32AddressPrefix["account_addr"]
+}
+
+// GetBech32KeyringAddrPrefix returns the Bech32 prefix for keyring address
+func (config *Config) GetBech32KeyringAddrPrefix() string {
+	return config.bech32AddressPrefix["keyring"]
+}
+
+// GetBech32WorkspaceAddrPrefix returns the Bech32 prefix for workspace address
+func (config *Config) GetBech32WorkspaceAddrPrefix() string {
+	return config.bech32AddressPrefix["workspace"]
 }
 
 // GetBech32ValidatorAddrPrefix returns the Bech32 prefix for validator address
