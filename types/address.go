@@ -207,6 +207,7 @@ func AccAddressFromBech32(address string) (addr AccAddress, err error) {
 		GetConfig().GetBech32KeyringAddrPrefix(),
 		GetConfig().GetBech32WorkspaceAddrPrefix(),
 	}
+
 	var bz []byte
 	for _, prefix := range bech32Prefixes {
 		bz, err = GetFromBech32(address, prefix)

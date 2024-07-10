@@ -13,13 +13,14 @@ import (
 )
 
 type bech32Codec struct {
-	bech32Prefix string
+	bech32Prefix        string // main prefix
+	bech32KeyringPrefix string
 }
 
 var _ address.Codec = &bech32Codec{}
 
 func NewBech32Codec(prefix string) address.Codec {
-	return bech32Codec{prefix}
+	return bech32Codec{prefix, sdk.Bech32PrefixKeyring}
 }
 
 // StringToBytes encodes text to bytes
@@ -33,8 +34,8 @@ func (bc bech32Codec) StringToBytes(text string) ([]byte, error) {
 		return nil, err
 	}
 
-	if hrp != bc.bech32Prefix {
-		return nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "hrp does not match bech32 prefix: expected '%s' got '%s'", bc.bech32Prefix, hrp)
+	if hrp != bc.bech32Prefix && hrp != bc.bech32KeyringPrefix {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "hrp does not match bech32 prefix: expected '%s' or '%s', got '%s'", bc.bech32Prefix, bc.bech32KeyringPrefix, hrp)
 	}
 
 	if err := sdk.VerifyAddressFormat(bz); err != nil {
