@@ -330,6 +330,7 @@ func AddCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator type
 	)
 
 	startCmd := StartCmd(appCreator, defaultNodeHome)
+	startCmd.Flags().Bool("non-validator", false, "Initialize as a non-validator node")
 	addStartFlags(startCmd)
 
 	rootCmd.AddCommand(
