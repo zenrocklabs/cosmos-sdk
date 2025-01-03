@@ -293,8 +293,8 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 		panic(fmt.Sprintf("failed to migrate x/gov from version 4 to 5: %v", err))
 	}
 
-	if err := cfg.RegisterMigration(govtypes.ModuleName, 5, m.Migrate5to6); err != nil {
-		panic(fmt.Sprintf("failed to migrate x/gov from version 5 to 6: %v", err))
+	if err := cfg.RegisterMigration(govtypes.ModuleName, 5, m.Migrate5to5fix1); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/gov from version 5 to 5fix1: %v", err))
 	}
 }
 
