@@ -1,7 +1,6 @@
 package v5fix1_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -18,14 +17,14 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	v1gov "github.com/cosmos/cosmos-sdk/x/gov/migrations/v1"
-	v3gov "github.com/cosmos/cosmos-sdk/x/gov/migrations/v3"
+	v5gov "github.com/cosmos/cosmos-sdk/x/gov/migrations/v5fix1"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	"github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
-var voter = sdk.MustAccAddressFromBech32("cosmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu34mf0eh")
+var voter = sdk.MustAccAddressFromBech32("zen13y3tm68gmu9kntcxwvmue82p6akacnpt2v7nty")
 
 func TestMigrateStore(t *testing.T) {
 	cdc := moduletestutil.MakeTestEncodingConfig(gov.AppModuleBasic{}).Codec
@@ -49,84 +48,105 @@ func TestMigrateStore(t *testing.T) {
 	contentAny, err := types.NewAnyWithValue(msgUpdateParams)
 	require.NoError(t, err)
 
-	prop1 := v1beta1.Proposal{
-		ProposalId: 1,
-		Content:    contentAny,
-		Status:     v1beta1.StatusPassed,
-		FinalTallyResult: v1beta1.TallyResult{
-			Yes: math.NewInt(1000000000000000000),
-			No:  math.NewInt(0),
+	prop2 := govv1.Proposal{
+		Id:       2,
+		Messages: []*types.Any{contentAny},
+		Status:   govv1.StatusPassed,
+		FinalTallyResult: &govv1.TallyResult{
+			YesCount:        "1000000000000000000",
+			NoCount:         "0",
+			AbstainCount:    "0",
+			NoWithVetoCount: "0",
 		},
-		SubmitTime:      propTime,
-		DepositEndTime:  propTime,
-		VotingStartTime: propTime,
-		VotingEndTime:   propTime,
+		SubmitTime:      &propTime,
+		DepositEndTime:  &propTime,
+		VotingStartTime: &propTime,
+		VotingEndTime:   &propTime,
 	}
 
-	fmt.Println("prop1: ")
-	fmt.Println(prop1)
+	// fmt.Println("prop1 typeURL: ")
+	// fmt.Println(prop1.Messages[0].TypeUrl)
 
-	// prop1, err := v1beta1.NewProposal(v1beta1.NewTextProposal("my title 1", "my desc 1"), 1, propTime, propTime)
-	// require.NoError(t, err)
+	msgUpdateGovParams := &govv1.MsgUpdateParams{
+		Authority: authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		Params: govv1.Params{
+			MinDeposit:       []sdk.Coin{sdk.NewCoin("zen", math.NewInt(1000000000000000000))},
+			MaxDepositPeriod: new(time.Duration),
+			VotingPeriod:     new(time.Duration),
+			Quorum:           "0.1",
+			Threshold:        "0.2",
+			VetoThreshold:    "0.5",
+		},
+	}
+
+	contentAny2, err := types.NewAnyWithValue(msgUpdateGovParams)
+	require.NoError(t, err)
+
+	prop1 := govv1.Proposal{
+		Id:       1,
+		Messages: []*types.Any{contentAny2},
+		Status:   govv1.StatusPassed,
+		FinalTallyResult: &govv1.TallyResult{
+			YesCount:        "1000000000000000000",
+			NoCount:         "0",
+			AbstainCount:    "0",
+			NoWithVetoCount: "0",
+		},
+		SubmitTime:      &propTime,
+		DepositEndTime:  &propTime,
+		VotingStartTime: &propTime,
+		VotingEndTime:   &propTime,
+	}
+
 	prop1Bz, err := cdc.Marshal(&prop1)
-	require.NoError(t, err)
-	prop2, err := v1beta1.NewProposal(v1beta1.NewTextProposal("my title 2", "my desc 2"), 2, propTime, propTime)
-	require.NoError(t, err)
 	require.NoError(t, err)
 	prop2Bz, err := cdc.Marshal(&prop2)
 	require.NoError(t, err)
 
-	store.Set(v1gov.ProposalKey(prop1.ProposalId), prop1Bz)
-	store.Set(v1gov.ProposalKey(prop2.ProposalId), prop2Bz)
+	store.Set(v1gov.ProposalKey(prop1.Id), prop1Bz)
+	store.Set(v1gov.ProposalKey(prop2.Id), prop2Bz)
 
 	// Vote on prop 1
-	options := []v1beta1.WeightedVoteOption{
-		{Option: v1beta1.OptionNo, Weight: math.LegacyMustNewDecFromStr("0.3")},
-		{Option: v1beta1.OptionYes, Weight: math.LegacyMustNewDecFromStr("0.7")},
+	options := []*govv1.WeightedVoteOption{
+		{
+			Option: govv1.OptionNo,
+			Weight: "0.3",
+		},
+		{
+			Option: govv1.OptionYes,
+			Weight: "0.7",
+		},
 	}
-	vote1 := v1beta1.NewVote(1, voter, options)
+	vote1 := govv1.NewVote(1, voter, options, "test")
 	vote1Bz := cdc.MustMarshal(&vote1)
 	store.Set(v1gov.VoteKey(1, voter), vote1Bz)
 
 	// Run migrations.
 	storeService := runtime.NewKVStoreService(govKey)
-	err = v3gov.MigrateStore(ctx, storeService, cdc)
+	err = v5gov.MigrateStore(ctx, storeService, cdc)
 	require.NoError(t, err)
 
 	var newProp1 v1.Proposal
-	err = cdc.Unmarshal(store.Get(v1gov.ProposalKey(prop1.ProposalId)), &newProp1)
+	err = cdc.Unmarshal(store.Get(v1gov.ProposalKey(prop1.Id)), &newProp1)
 	require.NoError(t, err)
 	compareProps(t, prop1, newProp1)
 
-	var newProp2 v1.Proposal
-	err = cdc.Unmarshal(store.Get(v1gov.ProposalKey(prop2.ProposalId)), &newProp2)
-	require.NoError(t, err)
-	compareProps(t, prop2, newProp2)
-
 	var newVote1 v1.Vote
-	err = cdc.Unmarshal(store.Get(v1gov.VoteKey(prop1.ProposalId, voter)), &newVote1)
+	err = cdc.Unmarshal(store.Get(v1gov.VoteKey(prop1.Id, voter)), &newVote1)
 	require.NoError(t, err)
-	// Without the votes migration, we would have 300000000000000000 in state,
-	// because of how sdk.Dec stores itself in state.
-	require.Equal(t, "0.300000000000000000", newVote1.Options[0].Weight)
-	require.Equal(t, "0.700000000000000000", newVote1.Options[1].Weight)
-
-	fmt.Println("newProp1: ")
-	fmt.Println(newProp1)
+	require.Equal(t, "0.3", newVote1.Options[0].Weight)
+	require.Equal(t, "0.7", newVote1.Options[1].Weight)
 }
 
-func compareProps(t *testing.T, oldProp v1beta1.Proposal, newProp v1.Proposal) {
-	require.Equal(t, oldProp.ProposalId, newProp.Id)
-	require.Equal(t, oldProp.TotalDeposit.String(), sdk.Coins(newProp.TotalDeposit).String())
+func compareProps(t *testing.T, oldProp v1.Proposal, newProp v1.Proposal) {
+	require.Equal(t, oldProp.Id, newProp.Id)
+	require.Equal(t, oldProp.TotalDeposit, newProp.TotalDeposit)
 	require.Equal(t, oldProp.Status.String(), newProp.Status.String())
-	require.Equal(t, oldProp.FinalTallyResult.Yes.String(), newProp.FinalTallyResult.YesCount)
-	require.Equal(t, oldProp.FinalTallyResult.No.String(), newProp.FinalTallyResult.NoCount)
-	require.Equal(t, oldProp.FinalTallyResult.NoWithVeto.String(), newProp.FinalTallyResult.NoWithVetoCount)
-	require.Equal(t, oldProp.FinalTallyResult.Abstain.String(), newProp.FinalTallyResult.AbstainCount)
-
-	newContent := newProp.Messages[0].GetCachedValue().(*v1.MsgExecLegacyContent).Content.GetCachedValue().(v1beta1.Content)
-	require.Equal(t, oldProp.Content.GetCachedValue().(v1beta1.Content), newContent)
-
+	require.Equal(t, oldProp.FinalTallyResult.YesCount, newProp.FinalTallyResult.YesCount)
+	require.Equal(t, oldProp.FinalTallyResult.NoCount, newProp.FinalTallyResult.NoCount)
+	require.Equal(t, oldProp.FinalTallyResult.NoWithVetoCount, newProp.FinalTallyResult.NoWithVetoCount)
+	require.Equal(t, oldProp.FinalTallyResult.AbstainCount, newProp.FinalTallyResult.AbstainCount)
+	require.Equal(t, oldProp.Messages[0].TypeUrl, newProp.Messages[0].TypeUrl)
 	// Compare UNIX times, as a simple Equal gives difference between Local and
 	// UTC times.
 	// ref: https://github.com/golang/go/issues/19486#issuecomment-292968278

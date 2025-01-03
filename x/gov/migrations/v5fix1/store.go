@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/migrations/v1"
-	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 )
 
 var (
@@ -32,15 +32,17 @@ func migrateProposals(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	defer iter.Close()
 
 	for ; iter.Valid(); iter.Next() {
-		var proposal govv1beta1.Proposal
+		var proposal govv1.Proposal
 		err := cdc.Unmarshal(iter.Value(), &proposal)
 		if err != nil {
 			return err
 		}
 
-		if proposal.Content.TypeUrl == "/cosmos.mint.v1beta1.MsgUpdateParams" {
-			proposal.Content.TypeUrl = "/zrchain.mint.v1beta1.MsgUpdateParams"
+		if proposal.Messages[0].TypeUrl == "/cosmos.mint.v1beta1.MsgUpdateParams" {
+			proposal.Messages[0].TypeUrl = "/zrchain.mint.v1beta1.MsgUpdateParams"
 		}
+
+		propStore.Set(iter.Key(), cdc.MustMarshal(&proposal))
 	}
 
 	return nil
