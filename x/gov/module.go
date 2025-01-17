@@ -36,7 +36,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
-const ConsensusVersion = 6
+const ConsensusVersion = 5
 
 var (
 	_ module.AppModuleBasic      = AppModuleBasic{}
@@ -291,10 +291,6 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 	if err := cfg.RegisterMigration(govtypes.ModuleName, 4, m.Migrate4to5); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/gov from version 4 to 5: %v", err))
-	}
-
-	if err := cfg.RegisterMigration(govtypes.ModuleName, 5, m.Migrate5to5fix1); err != nil {
-		panic(fmt.Sprintf("failed to migrate x/gov from version 5 to 5fix1: %v", err))
 	}
 }
 
