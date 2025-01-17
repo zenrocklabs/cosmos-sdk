@@ -6,7 +6,6 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
 // RegisterLegacyAminoCodec registers all the necessary types and interfaces for the
@@ -29,7 +28,6 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 		&MsgDeposit{},
 		&MsgExecLegacyContent{},
 		&MsgUpdateParams{},
-		&minttypes.MsgUpdateParams{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
