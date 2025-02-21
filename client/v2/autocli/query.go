@@ -52,7 +52,9 @@ func (b *Builder) AddQueryServiceCommands(cmd *cobra.Command, cmdDescriptor *aut
 			return err
 		}
 
-		cmd.AddCommand(subCmd)
+		if !subCmdDesc.EnhanceCustomCommand {
+			cmd.AddCommand(subCmd)
+		}
 	}
 
 	// skip empty command descriptors
@@ -122,6 +124,7 @@ func (b *Builder) BuildQueryMethodCommand(ctx context.Context, descriptor protor
 		EnumAsString:       true,
 		DoNotSortFields:    true,
 		AminoNameAsTypeURL: true,
+		MarshalMappings:    true,
 		TypeResolver:       b.TypeResolver,
 		FileResolver:       b.FileResolver,
 	}
