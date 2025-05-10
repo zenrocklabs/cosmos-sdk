@@ -41,7 +41,7 @@ func (k Keeper) AllocateTokens(ctx context.Context, totalPreviousPower int64, bo
 	}
 
 	// calculate fraction allocated to validators
-	remaining := feesCollected
+	remaining := feesCollected // Initialize remaining with all collected fees
 	communityTax, err := k.GetCommunityTax(ctx)
 	if err != nil {
 		return err
@@ -49,6 +49,15 @@ func (k Keeper) AllocateTokens(ctx context.Context, totalPreviousPower int64, bo
 
 	voteMultiplier := math.LegacyOneDec().Sub(communityTax)
 	feeMultiplier := feesCollected.MulDecTruncate(voteMultiplier)
+	totalBondedTokens := math.ZeroInt()
+
+	for _, vote := range bondedVotes {
+		validator, err := k.stakingKeeper.ValidatorByConsAddr(ctx, vote.Validator.Address)
+		if err != nil {
+			return err
+		}
+		totalBondedTokens = totalBondedTokens.Add(validator.GetBondedTokens())
+	}
 
 	// allocate tokens proportionally to voting power
 	//
@@ -56,6 +65,12 @@ func (k Keeper) AllocateTokens(ctx context.Context, totalPreviousPower int64, bo
 	//
 	// Ref: https://github.com/cosmos/cosmos-sdk/pull/3099#discussion_r246276376
 	for _, vote := range bondedVotes {
+		// If there are no bonded tokens, we stop further reward distribution in this loop.
+		// The `remaining` fees (which will be all `feesCollected`) will be added to the community pool later.
+		if totalBondedTokens.IsZero() {
+			break
+		}
+
 		validator, err := k.stakingKeeper.ValidatorByConsAddr(ctx, vote.Validator.Address)
 		if err != nil {
 			return err
@@ -64,11 +79,11 @@ func (k Keeper) AllocateTokens(ctx context.Context, totalPreviousPower int64, bo
 		// TODO: Consider micro-slashing for missing votes.
 		//
 		// Ref: https://github.com/cosmos/cosmos-sdk/issues/2525#issuecomment-430838701
-		powerFraction := math.LegacyNewDec(vote.Validator.Power).QuoTruncate(math.LegacyNewDec(totalPreviousPower))
-		reward := feeMultiplier.MulDecTruncate(powerFraction)
+		// powerFraction := math.LegacyNewDec(vote.Validator.Power).QuoTruncate(math.LegacyNewDec(totalPreviousPower))
+		stakeFraction := math.LegacyNewDecFromInt(validator.GetBondedTokens()).QuoTruncate(math.LegacyNewDecFromInt(totalBondedTokens))
+		reward := feeMultiplier.MulDecTruncate(stakeFraction)
 
-		err = k.AllocateTokensToValidator(ctx, validator, reward)
-		if err != nil {
+		if err = k.AllocateTokensToValidator(ctx, validator, reward); err != nil {
 			return err
 		}
 
