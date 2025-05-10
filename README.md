@@ -9,7 +9,10 @@ The following files have been modified:
 📁 x  
 &nbsp;&nbsp;&nbsp;└── auth  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── codec  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── [bech32_codec.go](https://github.com/zenrocklabs/cosmos-sdk/blob/master/x/auth/codec/bech32_codec.go)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── [bech32_codec.go](https://github.com/zenrocklabs/cosmos-sdk/blob/master/x/auth/codec/bech32_codec.go)  
+&nbsp;&nbsp;&nbsp;└── distribution  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── keeper  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── [allocation.go](https://github.com/zenrocklabs/cosmos-sdk/blob/master/x/distribution/keeper/allocation.go)
 
 📁 testutil  
 &nbsp;&nbsp;&nbsp;└── configurator  
