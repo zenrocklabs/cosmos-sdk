@@ -49,26 +49,30 @@ func (k Keeper) AllocateTokens(ctx context.Context, totalPreviousPower int64, bo
 
 	voteMultiplier := math.LegacyOneDec().Sub(communityTax)
 	feeMultiplier := feesCollected.MulDecTruncate(voteMultiplier)
+	totalBondedTokens := math.ZeroInt()
 
-	// allocate tokens proportionally to voting power
-	//
-	// TODO: Consider parallelizing later
-	//
-	// Ref: https://github.com/cosmos/cosmos-sdk/pull/3099#discussion_r246276376
 	for _, vote := range bondedVotes {
 		validator, err := k.stakingKeeper.ValidatorByConsAddr(ctx, vote.Validator.Address)
 		if err != nil {
 			return err
 		}
+		totalBondedTokens = totalBondedTokens.Add(validator.GetBondedTokens())
+	}
 
-		// TODO: Consider micro-slashing for missing votes.
-		//
-		// Ref: https://github.com/cosmos/cosmos-sdk/issues/2525#issuecomment-430838701
-		powerFraction := math.LegacyNewDec(vote.Validator.Power).QuoTruncate(math.LegacyNewDec(totalPreviousPower))
-		reward := feeMultiplier.MulDecTruncate(powerFraction)
+	for _, vote := range bondedVotes {
+		if totalBondedTokens.IsZero() {
+			break
+		}
 
-		err = k.AllocateTokensToValidator(ctx, validator, reward)
+		validator, err := k.stakingKeeper.ValidatorByConsAddr(ctx, vote.Validator.Address)
 		if err != nil {
+			return err
+		}
+
+		stakeFraction := math.LegacyNewDecFromInt(validator.GetBondedTokens()).QuoTruncate(math.LegacyNewDecFromInt(totalBondedTokens))
+		reward := feeMultiplier.MulDecTruncate(stakeFraction)
+
+		if err = k.AllocateTokensToValidator(ctx, validator, reward); err != nil {
 			return err
 		}
 
