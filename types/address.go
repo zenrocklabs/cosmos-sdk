@@ -36,7 +36,13 @@ const (
 	//	config.Seal()
 
 	// Bech32MainPrefix defines the main SDK Bech32 prefix of an account's address
-	Bech32MainPrefix = "cosmos"
+	Bech32MainPrefix = "zen"
+
+	// Bech32PrefixKeyring defines the Bech32 prefix used in keyring accounts
+	Bech32PrefixKeyring = "keyring"
+
+	// Bech32PrefixWorkspace defines the Bech32 prefix used in workspace accounts
+	Bech32PrefixWorkspace = "workspace"
 
 	// Purpose is the ATOM purpose as defined in SLIP44 (https://github.com/satoshilabs/slips/blob/master/slip-0044.md)
 	Purpose = 44
@@ -191,20 +197,30 @@ func MustAccAddressFromBech32(address string) AccAddress {
 }
 
 // AccAddressFromBech32 creates an AccAddress from a Bech32 string.
+// It accepts the standard account prefix as well as the keyring and workspace prefixes.
 func AccAddressFromBech32(address string) (addr AccAddress, err error) {
 	if len(strings.TrimSpace(address)) == 0 {
 		return AccAddress{}, errors.New("empty address string is not allowed")
 	}
 
-	bech32PrefixAccAddr := GetConfig().GetBech32AccountAddrPrefix()
-
-	bz, err := GetFromBech32(address, bech32PrefixAccAddr)
-	if err != nil {
-		return nil, err
+	bech32Prefixes := []string{
+		GetConfig().GetBech32AccountAddrPrefix(),
+		GetConfig().GetBech32KeyringAddrPrefix(),
+		GetConfig().GetBech32WorkspaceAddrPrefix(),
 	}
 
-	err = VerifyAddressFormat(bz)
+	var bz []byte
+	for _, prefix := range bech32Prefixes {
+		bz, err = GetFromBech32(address, prefix)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
+		return nil, fmt.Errorf("failed to convert Bech32 address: invalid address format for account/keyring/workspace - %v", err)
+	}
+
+	if err = VerifyAddressFormat(bz); err != nil {
 		return nil, err
 	}
 
