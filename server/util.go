@@ -331,8 +331,6 @@ func AddCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator type
 
 	startCmd := StartCmd(appCreator, defaultNodeHome)
 	addStartFlags(startCmd)
-	startCmd.Flags().Bool("non-validator", false, "Initialize as a non-validator node")
-	startCmd.Flags().String("sidecar-addr", "localhost:9191", "Set the validator sidecar GRPC address")
 
 	rootCmd.AddCommand(
 		startCmd,
