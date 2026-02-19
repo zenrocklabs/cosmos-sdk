@@ -17,6 +17,3 @@ The following files have been modified:
 📁 testutil
 &nbsp;&nbsp;&nbsp;└── configurator
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── [configurator.go](https://github.com/zenrocklabs/cosmos-sdk/blob/master/testutil/configurator/configurator.go)
-
-📁 server
-&nbsp;&nbsp;&nbsp;└── [util.go](https://github.com/zenrocklabs/cosmos-sdk/blob/master/server/util.go)
